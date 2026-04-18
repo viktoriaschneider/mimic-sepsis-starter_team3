@@ -1,4 +1,4 @@
-import joblib
+import cloudpickle
 import flwr as fl
 from typing import List, Tuple, Optional, Dict, Union
 from flwr.common import (
@@ -23,7 +23,9 @@ class SaveModelStrategy(fl.server.strategy.FedAvg):
 
         total_examples = sum(evaluate_res.num_examples for _, evaluate_res in results)
         if total_examples == 0:
-            print(f"Round {server_round}: All clients returned 0 examples in evaluate — skipping aggregation.")
+            print(
+                f"Round {server_round}: All clients returned 0 examples in evaluate — skipping aggregation."
+            )
             return None, {}
 
         return super().aggregate_evaluate(server_round, results, failures)
@@ -45,7 +47,8 @@ class SaveModelStrategy(fl.server.strategy.FedAvg):
             full_pipeline = get_model()
             set_model_parameters(full_pipeline, params_numpy)
 
-            joblib.dump(full_pipeline, "final_model.pkl")
+            with open("final_model.pkl", "wb") as f:
+                cloudpickle.dump(full_pipeline, f)
             print(f"Round {server_round}: Saved full pipeline to final_model.pkl")
 
         return aggregated_parameters, aggregated_metrics

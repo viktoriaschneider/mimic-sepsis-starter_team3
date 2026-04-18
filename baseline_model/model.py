@@ -22,7 +22,7 @@ def get_model():
     model = Pipeline(
         [
             ("engineering", FunctionTransformer(medical_feature_engineering)),
-            ("poly", PolynomialFeatures(degree=2, interaction_only=True)),
+            # ("poly", PolynomialFeatures(degree=2, interaction_only=True)),
             ("scaler", StandardScaler()),
             ("clf", LogisticRegression(warm_start=True, max_iter=1)),
         ]
