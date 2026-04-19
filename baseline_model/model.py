@@ -1,4 +1,5 @@
 import numpy as np
+import cloudpickle
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import (
     StandardScaler,
@@ -11,6 +12,7 @@ from sklearn.pipeline import Pipeline
 def get_model():
     def medical_feature_engineering(X):
         # HR=0, SBP=3, BUN=15, Creatinine=19 per FEATURE_COLUMNS in dataset_loader.py
+        # Always keep these transformation under the get_model() function!
         hr = X[:, [0]]
         sbp = X[:, [3]]
         bun = X[:, [15]]
@@ -40,3 +42,15 @@ def get_model_parameters(model):
 def set_model_parameters(model, parameters):
     model.named_steps["clf"].coef_ = parameters[0]
     model.named_steps["clf"].intercept_ = parameters[1]
+
+
+def save_model(model, path="final_model.pkl"):
+    """Serialize the full pipeline to disk (cloudpickle preserves custom transforms)."""
+    with open(path, "wb") as f:
+        cloudpickle.dump(model, f)
+
+
+def load_model(path="final_model.pkl"):
+    """Load a previously saved pipeline from disk."""
+    with open(path, "rb") as f:
+        return cloudpickle.load(f)

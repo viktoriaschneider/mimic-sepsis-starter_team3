@@ -47,8 +47,18 @@ class SaveModelStrategy(fl.server.strategy.FedAvg):
             full_pipeline = get_model()
             set_model_parameters(full_pipeline, params_numpy)
 
+            # Save a per-round checkpoint so no round is ever lost
+            checkpoint_path = f"model_round_{server_round}.pkl"
+            with open(checkpoint_path, "wb") as f:
+                cloudpickle.dump(full_pipeline, f)
+
+            # Always overwrite final_model.pkl so it points to the latest round
             with open("final_model.pkl", "wb") as f:
                 cloudpickle.dump(full_pipeline, f)
-            print(f"Round {server_round}: Saved full pipeline to final_model.pkl")
+
+            print(
+                f"Round {server_round}: Saved checkpoint → {checkpoint_path}"
+                f"  (final_model.pkl updated)"
+            )
 
         return aggregated_parameters, aggregated_metrics

@@ -27,18 +27,24 @@ def aggregate_metrics(metrics: List[Tuple[int, Metrics]]) -> Dict[str, float]:
     total_tn = sum([m.get("true_negatives", 0) for _, m in metrics])
 
     # 2. Calculate the weighted average for rates/ratios
-    weighted_auroc = sum([num * m.get("auroc", 0) for num, m in metrics]) / total_examples
+    weighted_auroc = (
+        sum([num * m.get("auroc", 0) for num, m in metrics]) / total_examples
+    )
     weighted_log_loss = (
         sum([num * m.get("log_loss", 0) for num, m in metrics]) / total_examples
     )
     weighted_accuracy = (
         sum([num * m.get("accuracy", 0) for num, m in metrics]) / total_examples
     )
-    weighted_f1 = sum([num * m.get("f1_score", 0) for num, m in metrics]) / total_examples
+    weighted_f1 = (
+        sum([num * m.get("f1_score", 0) for num, m in metrics]) / total_examples
+    )
     weighted_precision = (
         sum([num * m.get("precision", 0) for num, m in metrics]) / total_examples
     )
-    weighted_recall = sum([num * m.get("recall", 0) for num, m in metrics]) / total_examples
+    weighted_recall = (
+        sum([num * m.get("recall", 0) for num, m in metrics]) / total_examples
+    )
 
     return {
         "TOTAL_COST": total_cost,
@@ -69,8 +75,6 @@ def get_on_fit_config_fn():
 def main():
     print("Starting Central FL Server with Dynamic Pipelines...")
 
-    # 1. Generate initial parameters locally on the server
-    # This ensures the server knows the 'shape' of the model from the start
     init_model = get_model()
     initial_params = fl.common.ndarrays_to_parameters(get_model_parameters(init_model))
 
@@ -80,7 +84,7 @@ def main():
         min_evaluate_clients=5,
         on_fit_config_fn=get_on_fit_config_fn(),
         initial_parameters=initial_params,
-        evaluate_metrics_aggregation_fn=aggregate_metrics,  # <--- ADD THIS LINE
+        evaluate_metrics_aggregation_fn=aggregate_metrics,
     )
 
     fl.server.start_server(
