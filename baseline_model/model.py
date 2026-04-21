@@ -14,9 +14,19 @@ def get_model():
         sbp = X[:, [3]]
         bun = X[:, [15]]
         creat = X[:, [19]]
+        o2sat = X[:, [11]]
+        fio2 = X[:, [10]]
+        map = X[:, [4]]
+        age = X[:, [34]]
+        resp = X[:, [6]]
+        lactate = X[:, [22]]
+        o2sat_fio2_ratio = o2sat/fio2 
+        map_age_ratio = map/age 
+        hr_temp = hr*temp
+        resp_lactate =resp*lactate
         shock_index = hr / (sbp + 1e-6)
         bun_creat_ratio = bun / (creat + 1e-6)
-        return np.hstack([X, shock_index, bun_creat_ratio])
+        return np.hstack([X, shock_index, bun_creat_ratio, o2sat_fio2_ratio, map_age_ratio, hr_temp, resp_lactate])
  
     model = Pipeline(
         [
@@ -24,18 +34,11 @@ def get_model():
             ("scaler", StandardScaler()),
             # Random Forest helyett egy Neurális Háló (MLP), ami FL-kompatibilis
             ("clf", MLPClassifier(
-                hidden_layer_sizes=(64, 32), # 1. Picit nagyobb kapacitás
-                max_iter=1,                  # FL miatt MARAD!
-                warm_start=True,             # FL miatt MARAD!
+                hidden_layer_sizes=(32, 18), # Két rejtett réteg (mint a RF fái)
+                max_iter=1,                  # FL miatt körönként csak egyet lépünk
+                warm_start=True,             # Megtartja az előző kör tudását
                 random_state=42,
-                
-                # --- ÚJ ÉS MÓDOSÍTOTT PARAMÉTEREK ---
-                learning_rate_init=0.01,    # 2. Visszavett tanulási ráta
-                alpha=0.01,                  # 3. Erősebb regularizáció (Overfitting ellen)
-                solver="adam",               # 4. Optimalizáló
-                batch_size=64,               # 5. Fixált FL batch size
-                activation="relu"
-
+                learning_rate_init=0.05      # Kicsit gyorsabb tanulás
             )),
         ]
     )
