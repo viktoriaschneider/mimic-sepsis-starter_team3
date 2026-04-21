@@ -4,8 +4,8 @@ from sklearn.neural_network import MLPClassifier
 from sklearn.preprocessing import (
     StandardScaler,
     FunctionTransformer,
-    SimpleImputer
 )
+from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
  
 def get_model():
