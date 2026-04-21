@@ -20,8 +20,8 @@ def get_model():
         age = X[:, [34]]
         resp = X[:, [6]]
         lactate = X[:, [22]]
-        o2sat_fio2_ratio = o2sat/fio2 
-        map_age_ratio = map/age 
+        o2sat_fio2_ratio = o2sat/(fio2 + 1e-6) 
+        map_age_ratio = map/(age + 1e-6)
         hr_temp = hr*temp
         resp_lactate =resp*lactate
         shock_index = hr / (sbp + 1e-6)
