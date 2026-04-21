@@ -22,7 +22,8 @@ def get_model():
         resp = X[:, [6]]
         lactate = X[:, [22]]
         HR_high = hr > 100
-        SBP_low = sbp < 90
+        SBP_low = sbp < 100
+        o2sat_low= o2sat < 90
         lactate_high = lactate > 2
         o2sat_fio2_ratio = o2sat/(fio2 + 1e-6) 
         map_age_ratio = map/(age + 1e-6)
