@@ -1,56 +1,58 @@
 import numpy as np
 import cloudpickle
-from sklearn.linear_model import LogisticRegression
+from sklearn.neural_network import MLPClassifier
 from sklearn.preprocessing import (
     StandardScaler,
-    PolynomialFeatures,
     FunctionTransformer,
 )
 from sklearn.pipeline import Pipeline
-
-
+ 
 def get_model():
     def medical_feature_engineering(X):
-        # HR=0, SBP=3, BUN=15, Creatinine=19 per FEATURE_COLUMNS in dataset_loader.py
-        # Always keep these transformation under the get_model() function!
         hr = X[:, [0]]
+        temp = X[:,[2]]
         sbp = X[:, [3]]
         bun = X[:, [15]]
         creat = X[:, [19]]
         shock_index = hr / (sbp + 1e-6)
         bun_creat_ratio = bun / (creat + 1e-6)
         return np.hstack([X, shock_index, bun_creat_ratio])
-
+ 
     model = Pipeline(
         [
             ("engineering", FunctionTransformer(medical_feature_engineering)),
-            # ("poly", PolynomialFeatures(degree=2, interaction_only=True)),
             ("scaler", StandardScaler()),
-            ("clf", LogisticRegression(warm_start=True, max_iter=1)),
+            # Random Forest helyett egy Neurális Háló (MLP), ami FL-kompatibilis
+            ("clf", MLPClassifier(
+                hidden_layer_sizes=(32, 18), # Két rejtett réteg (mint a RF fái)
+                max_iter=1,                  # FL miatt körönként csak egyet lépünk
+                warm_start=True,             # Megtartja az előző kör tudását
+                random_state=42,
+                learning_rate_init=0.05      # Kicsit gyorsabb tanulás
+            )),
         ]
     )
-
-    # Pre-fit with dummy data to initialize pipeline shapes (40 input features)
+ 
+    # Pre-fit dummy adattal, hogy a súlyok (coefs_) létrejöjjenek a 40 oszlophoz
     model.fit(np.zeros((5, 40)), np.array([0, 1, 0, 1, 0]))
     return model
-
-
+ 
 def get_model_parameters(model):
-    return [model.named_steps["clf"].coef_, model.named_steps["clf"].intercept_]
-
-
+    # MLP-nél több réteg van, így a coefs_ és intercepts_ listákat fűzzük össze
+    clf = model.named_steps["clf"]
+    return clf.coefs_ + clf.intercepts_
+ 
 def set_model_parameters(model, parameters):
-    model.named_steps["clf"].coef_ = parameters[0]
-    model.named_steps["clf"].intercept_ = parameters[1]
-
-
+    clf = model.named_steps["clf"]
+    # A kapott paraméterlista első fele a súlyok, második az eltolások
+    n_layers = len(clf.coefs_)
+    clf.coefs_ = parameters[:n_layers]
+    clf.intercepts_ = parameters[n_layers:]
+ 
 def save_model(model, path="final_model.pkl"):
-    """Serialize the full pipeline to disk (cloudpickle preserves custom transforms)."""
     with open(path, "wb") as f:
         cloudpickle.dump(model, f)
-
-
+ 
 def load_model(path="final_model.pkl"):
-    """Load a previously saved pipeline from disk."""
     with open(path, "rb") as f:
         return cloudpickle.load(f)
