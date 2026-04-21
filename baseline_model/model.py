@@ -21,15 +21,13 @@ def get_model():
         age = X[:, [34]]
         resp = X[:, [6]]
         lactate = X[:, [22]]
-        lactate_high = lactate > 2
         o2sat_fio2_ratio = o2sat/(fio2 + 1e-6) 
         map_age_ratio = map/(age + 1e-6)
         hr_temp = hr*temp
         resp_lactate =resp*lactate
         shock_index = hr / (sbp + 1e-6)
         bun_creat_ratio = bun / (creat + 1e-6)
-        return np.hstack([X, shock_index, bun_creat_ratio, o2sat_fio2_ratio, map_age_ratio, hr_temp, resp_lactate, 
-                          lactate_high])
+        return np.hstack([X, shock_index, bun_creat_ratio, o2sat_fio2_ratio, map_age_ratio, hr_temp, resp_lactate])
  
     model = Pipeline(
         [
