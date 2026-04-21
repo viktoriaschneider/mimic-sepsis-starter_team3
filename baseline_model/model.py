@@ -36,7 +36,7 @@ def get_model():
             ("scaler", StandardScaler()),
             # Random Forest helyett egy Neurális Háló (MLP), ami FL-kompatibilis
             ("clf", MLPClassifier(
-                hidden_layer_sizes=(64, 32), # Két rejtett réteg (mint a RF fái)
+                hidden_layer_sizes=(128, 64), # Két rejtett réteg (mint a RF fái)
                 max_iter=1,                  # FL miatt körönként csak egyet lépünk
                 warm_start=True,             # Megtartja az előző kör tudását
                 random_state=42,
