@@ -5,6 +5,7 @@ from sklearn.preprocessing import (
     StandardScaler,
     FunctionTransformer,
 )
+from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
  
 def get_model():
@@ -30,6 +31,7 @@ def get_model():
  
     model = Pipeline(
         [
+            ("imputer", SimpleImputer(missing_values=np.nan, strategy="median")),
             ("engineering", FunctionTransformer(medical_feature_engineering)),
             ("scaler", StandardScaler()),
             # Random Forest helyett egy Neurális Háló (MLP), ami FL-kompatibilis
